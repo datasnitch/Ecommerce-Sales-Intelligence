@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        E-Commerce Sales Intelligence
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <header class="dashboard-header">
+
+        <div class="header-content">
+
+            <h1>
+                E-Commerce Sales Intelligence
+            </h1>
+
+            <p>
+                Sales, Customer and Product Analytics Dashboard
+            </p>
+
+        </div>
+
+    </header>
+
+
+    <main class="dashboard-container">
+
+
+        <!-- =================================================
+             KPI CARDS
+        ================================================== -->
+
+        <section class="kpi-grid">
+
+
+            <div class="kpi-card">
+
+                <div class="kpi-title">
+                    Total Customers
+                </div>
+
+                <div class="kpi-value">
+                    {{ "{:,}".format(total_customers) }}
+                </div>
+
+            </div>
+
+
+            <div class="kpi-card">
+
+                <div class="kpi-title">
+                    Total Orders
+                </div>
+
+                <div class="kpi-value">
+                    {{ "{:,}".format(total_orders) }}
+                </div>
+
+            </div>
+
+
+            <div class="kpi-card">
+
+                <div class="kpi-title">
+                    Total Revenue
+                </div>
+
+                <div class="kpi-value">
+
+                    ₹{{ "{:,.2f}".format(total_revenue or 0) }}
+
+                </div>
+
+            </div>
+
+
+            <div class="kpi-card">
+
+                <div class="kpi-title">
+                    Total Products
+                </div>
+
+                <div class="kpi-value">
+                    {{ "{:,}".format(total_products) }}
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- =================================================
+             REVENUE + CATEGORY
+        ================================================== -->
+
+        <section class="chart-grid">
+
+
+            <!-- MONTHLY REVENUE -->
+
+            <div class="chart-card">
+
+                <h2>
+                    Monthly Revenue
+                </h2>
+
+                <div class="chart-container">
+
+                    <canvas
+                        id="monthlyRevenueChart"
+                    ></canvas>
+
+                </div>
+
+            </div>
+
+
+            <!-- CATEGORY REVENUE -->
+
+            <div class="chart-card">
+
+                <h2>
+                    Revenue by Category
+                </h2>
+
+                <div class="chart-container category-chart">
+
+                    <canvas
+                        id="categoryRevenueChart"
+                    ></canvas>
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- =================================================
+             MONTHLY ORDERS
+        ================================================== -->
+
+        <section class="chart-card full-width">
+
+            <h2>
+                Monthly Orders
+            </h2>
+
+            <div class="chart-container large">
+
+                <canvas
+                    id="monthlyOrdersChart"
+                ></canvas>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ============================================================
+     SALES FORECAST
+============================================================ -->
+
+<section class="dashboard-card forecast-card">
+
+    <div class="section-header">
+        <div>
+            <h2>Sales Forecast</h2>
+            <p>
+                Next 3 months prediction for
+                <strong>Books Product 107</strong>
+            </p>
+        </div>
+
+        <span class="category-badge">Books</span>
+    </div>
+
+    <div class="forecast-image-container">
+        <img
+            src="{{ url_for('static', filename='product_107_forecast.png') }}"
+            alt="Sales Forecast for Books Product 107"
+            class="forecast-image"
+        >
+    </div>
+
+</section>
+
+
+
+        <!-- =================================================
+             TOP 10 PRODUCTS
+        ================================================== -->
+
+        <section class="table-card">
+
+            <h2>
+                Top 10 Best-Selling Products
+            </h2>
+
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Rank
+                            </th>
+
+                            <th>
+                                Product
+                            </th>
+
+                            <th>
+                                Category
+                            </th>
+
+                            <th>
+                                Units Sold
+                            </th>
+
+                            <th>
+                                Revenue
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for product in top_products %}
+
+                        <tr>
+
+                            <td>
+                                {{ loop.index }}
+                            </td>
+
+                            <td>
+                                {{ product.name }}
+                            </td>
+
+                            <td>
+                                {{ product.category }}
+                            </td>
+
+                            <td>
+                                {{ "{:,}".format(
+                                    product.units_sold
+                                ) }}
+                            </td>
+
+                            <td>
+                                ₹{{ "{:,.2f}".format(
+                                    product.revenue
+                                ) }}
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <footer>
+
+        <strong>
+            E-Commerce Sales Intelligence Platform
+        </strong>
+
+        <br>
+
+        Built using Python, SQLite, Flask and SQL
+
+    </footer>
+
+
+    <!-- =====================================================
+         CHART DATA
+    ====================================================== -->
+
+    <script>
+
+        const monthlyLabels =
+            {{ monthly_labels | tojson }};
+
+        const monthlyRevenue =
+            {{ monthly_revenue | tojson }};
+
+        const monthlyOrders =
+            {{ monthly_orders | tojson }};
+
+        const categoryLabels =
+            {{ category_labels | tojson }};
+
+        const categoryRevenue =
+            {{ category_revenue | tojson }};
+
+
+        /* =================================================
+           MONTHLY REVENUE
+        ================================================= */
+
+        new Chart(
+            document.getElementById(
+                "monthlyRevenueChart"
+            ),
+            {
+
+                type: "line",
+
+                data: {
+
+                    labels: monthlyLabels,
+
+                    datasets: [
+
+                        {
+
+                            label: "Revenue",
+
+                            data: monthlyRevenue,
+
+                            borderWidth: 3,
+
+                            tension: 0.3,
+
+                            fill: false,
+
+                            pointRadius: 4
+
+                        }
+
+                    ]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    plugins: {
+
+                        legend: {
+                            display: true
+                        }
+
+                    },
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero: true,
+
+                            ticks: {
+
+                                callback:
+                                function(value) {
+
+                                    return "₹" +
+                                        Number(value)
+                                        .toLocaleString("en-IN");
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+
+        /* =================================================
+           CATEGORY REVENUE
+        ================================================= */
+
+        new Chart(
+
+            document.getElementById(
+                "categoryRevenueChart"
+            ),
+
+            {
+
+                type: "doughnut",
+
+                data: {
+
+                    labels: categoryLabels,
+
+                    datasets: [
+
+                        {
+
+                            data: categoryRevenue,
+
+                            borderWidth: 2
+
+                        }
+
+                    ]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    plugins: {
+
+                        legend: {
+
+                            position: "right"
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        );
+
+
+        /* =================================================
+           MONTHLY ORDERS
+        ================================================= */
+
+        new Chart(
+
+            document.getElementById(
+                "monthlyOrdersChart"
+            ),
+
+            {
+
+                type: "bar",
+
+                data: {
+
+                    labels: monthlyLabels,
+
+                    datasets: [
+
+                        {
+
+                            label: "Orders",
+
+                            data: monthlyOrders,
+
+                            borderWidth: 1,
+
+                            borderRadius: 4
+
+                        }
+
+                    ]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    plugins: {
+
+                        legend: {
+
+                            display: true
+
+                        }
+
+                    },
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero: true
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        );
+
+    </script>
+
+
+</body>
+
+</html>
